@@ -29,11 +29,17 @@ class Fixtures
 
     protected static $teams;
 
+    protected static $rotating_teams;
+
     protected static $home_matches_fixed;
 
     protected static $fixtures;
 
     protected static $second_match;
+
+    protected static $group_a;
+
+    protected static $group_b;
 
     private $weekends = [6, 7];
 
@@ -45,11 +51,17 @@ class Fixtures
 
     public function load_teams()
     {
-        $db = new DB();
+//        $db = new DB();
+//
+//        $db->connect('localhost', 'root', '', 'ipl');
+//
+//        self::$teams = $db->query("SELECT * from teams inner join cities on cities.id = teams.home_city_id LIMIT " . self::$number_of_teams);
 
-        $db->connect('localhost', 'root', '', 'ipl');
+        $json = '[{"id":"1","name":"Team A","home_city_id":"1","city":"City A"},{"id":"2","name":"Team B","home_city_id":"2","city":"City B"},{"id":"3","name":"Team C","home_city_id":"3","city":"City C"},{"id":"4","name":"Team D","home_city_id":"4","city":"City D"},{"id":"5","name":"Team E","home_city_id":"5","city":"City E"},{"id":"6","name":"Team F","home_city_id":"6","city":"City F"},{"id":"7","name":"Team G","home_city_id":"7","city":"City G"},{"id":"8","name":"Team H","home_city_id":"8","city":"City H"}]';
 
-        self::$teams = $db->query("SELECT * from teams inner join cities on cities.id = teams.home_city_id LIMIT " . self::$number_of_teams);
+        self::$teams = json_decode($json);
+
+        self::$rotating_teams = self::$teams;
 
         $this->index_by_team_id();
 
@@ -195,10 +207,6 @@ class Fixtures
 
         $fixture_key = self::$home_team . '-' . self::$away_team;
 
-        if (!isset(self::$fixtures[$fixture_key])) {
-            $break_here = "";
-        }
-
         self::$fixtures[$fixture_key]->date = self::$today;
 
         $fixture = self::$fixtures[$fixture_key];
@@ -295,7 +303,71 @@ class Fixtures
     public function roundrobin_fixtures()
     {
 
+        $this->delete_from_fixtures();
 
+        $this->populate_fixtures_without_dates();
+
+        while (self::$match_count <= 56) {
+
+            $this->get_two_groups();
+
+            $this->fixtures_for_this_round();
+
+            $this->shift_teams_in_groups();
+
+        }
+
+    }
+
+    private function get_two_groups()
+    {
+        self::$rotating_teams;
+
+        $two_groups = array_chunk(self::$rotating_teams, 4);
+
+        self::$group_a = $two_groups[0];
+
+        self::$group_b = $two_groups[1];
+
+    }
+
+    private function fixtures_for_this_round()
+    {
+
+        for ($i = 0; $i < 4; $i++) {
+
+            $day = self::$today->format('N');
+
+            self::$home_team = self::$group_a[$i]->id;
+
+            self::$away_team = self::$group_b[$i]->id;
+
+            $fixture_key = self::$home_team . '-' . self::$away_team;
+
+            self::$fixtures[$fixture_key] = $this->obj_fixture(self::$group_a[$i], self::$group_b[$i], false);
+
+            $this->save_fixture();
+
+            if (in_array($day, $this->weekends)) {
+                if (self::$second_match) {
+                    $this->advance_date();
+                } else {
+                    self::$second_match = true;
+                }
+            } else {
+                $this->advance_date();
+            }
+
+        }
+
+    }
+
+    private function shift_teams_in_groups()
+    {
+
+        $team = array_shift(self::$rotating_teams);
+
+        self::$rotating_teams[7] = $team;
 
     }
 
