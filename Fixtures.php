@@ -78,8 +78,8 @@ class Fixtures
         $fixture->venue_id = $home_team->home_city_id;
         $fixture->date = $date_null ? null : self::$today->format('Y-m-d');
         if (!$date_null) {
-            self::$teams_participating_datewise[self::$today->format('Y-m-d')][] = $home_team->id;
-            self::$teams_participating_datewise[self::$today->format('Y-m-d')][] = $away_team->id;
+            self::$teams_participating_datewise[self::$today->format('Y-m-d')][$home_team->id] = $home_team->id;
+            self::$teams_participating_datewise[self::$today->format('Y-m-d')][$away_team->id] = $away_team->id;
         }
         return $fixture;
     }
@@ -277,8 +277,8 @@ class Fixtures
     private function populate_teams_participating_datewise()
     {
         $date_key = self::$today->format('Y-m-d');
-        self::$teams_participating_datewise[$date_key][] = self::$home_team;
-        self::$teams_participating_datewise[$date_key][] = self::$away_team;
+        self::$teams_participating_datewise[$date_key][self::$home_team] = self::$home_team;
+        self::$teams_participating_datewise[$date_key][self::$away_team] = self::$away_team;
     }
 
     public function do_fixtures()
