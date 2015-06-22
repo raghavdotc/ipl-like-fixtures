@@ -41,6 +41,8 @@ class Fixtures
 
     protected static $group_b;
 
+    protected static $venues;
+
     private $weekends = [6, 7];
 
     public function set_tournament_starting_date($date)
@@ -62,6 +64,10 @@ class Fixtures
         $json = '[{"id":"1","name":"Team A","home_city_id":"1","city":"City A"},{"id":"2","name":"Team B","home_city_id":"2","city":"City B"},{"id":"3","name":"Team C","home_city_id":"3","city":"City C"},{"id":"4","name":"Team D","home_city_id":"4","city":"City D"},{"id":"5","name":"Team E","home_city_id":"5","city":"City E"},{"id":"6","name":"Team F","home_city_id":"6","city":"City F"},{"id":"7","name":"Team G","home_city_id":"7","city":"City G"},{"id":"8","name":"Team H","home_city_id":"8","city":"City H"}]';
 
         self::$teams = json_decode($json);
+
+        foreach (self::$teams as $city) {
+            self::$venues[$city->home_city_id] = $city->city;
+        }
 
         self::$rotating_teams = self::$teams;
 
@@ -225,7 +231,7 @@ class Fixtures
 
         print self::$match_count . ' ==> ' . $fixture->date->format('d-M-Y, l') . " ===> ";
 
-        print $fixture->title . " \n";
+        print $fixture->title . ' ==> ' . self::$venues[$fixture->venue_id] . " \n";
 
         self::$match_count++;
 
