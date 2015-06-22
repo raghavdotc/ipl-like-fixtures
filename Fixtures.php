@@ -217,11 +217,11 @@ class Fixtures
 
         $fixture = self::$fixtures[$fixture_key];
 
-        $db = new DB();
-
-        $db->connect('localhost', 'root', '', 'ipl');
-
-        $db->insert_into_fixtures($fixture->title, $fixture->home_team_id, $fixture->away_team_id, $fixture->venue_id, $fixture->date->format('Y-m-d'));
+//        $db = new DB();
+//
+//        $db->connect('localhost', 'root', '', 'ipl');
+//
+//        $db->insert_into_fixtures($fixture->title, $fixture->home_team_id, $fixture->away_team_id, $fixture->venue_id, $fixture->date->format('Y-m-d'));
 
         print self::$match_count . ' ==> ' . $fixture->date->format('d-M-Y, l') . " ===> ";
 
