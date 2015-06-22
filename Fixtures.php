@@ -46,6 +46,8 @@ class Fixtures
     public function set_tournament_starting_date($date)
     {
         self::$today = new DateTime($date);
+        $today = new DateTime($date);
+        self::$yesterday = $today->sub(new DateInterval('P1D'))->format('Y-m-d');
     }
 
 
@@ -75,6 +77,10 @@ class Fixtures
         $fixture->away_team_id = $away_team->id;
         $fixture->venue_id = $home_team->home_city_id;
         $fixture->date = $date_null ? null : self::$today->format('Y-m-d');
+        if (!$date_null) {
+            self::$teams_participating_datewise[self::$today->format('Y-m-d')][] = $home_team->id;
+            self::$teams_participating_datewise[self::$today->format('Y-m-d')][] = $away_team->id;
+        }
         return $fixture;
     }
 
@@ -344,6 +350,9 @@ class Fixtures
 
             $fixture_key = self::$home_team . '-' . self::$away_team;
 
+            if (!isset(self::$teams_participating_datewise[self::$yesterday]) || in_array(self::$home_team, self::$teams_participating_datewise[self::$yesterday]) || in_array(self::$away_team, self::$teams_participating_datewise[self::$yesterday])) {
+                $this->advance_date();
+            }
             self::$fixtures[$fixture_key] = $this->obj_fixture(self::$group_a[$i], self::$group_b[$i], false);
 
             $this->save_fixture();
